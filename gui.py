@@ -55,7 +55,7 @@ class RoblesStreamerApp(ctk.CTk):
                 self.proceso_motor = subprocess.Popen([sys.executable, "streamer.py"])
             
             elif "H.264" in seleccion:
-                # EL NUEVO PODER: FFmpeg como Servidor RTSP Nativo (Estabilizado Nivel 2)
+                # EL NUEVO PODER: FFmpeg como Servidor RTSP Nativo (Puerto Purificado)
                 comando_ffmpeg = [
                     "ffmpeg.exe",
                     "-f", "gdigrab",           
@@ -63,11 +63,10 @@ class RoblesStreamerApp(ctk.CTk):
                     "-i", "desktop",           
                     "-c:v", "libx264",         
                     "-preset", "ultrafast",    
-                    "-tune", "zerolatency",
-                    "-rtsp_transport", "tcp",  # NUEVO: Forzamos la estabilidad del protocolo TCP
-                    "-rtsp_flags", "listen",   
+                    "-tune", "zerolatency",    
+                    "-rtsp_flags", "listen",   # FFmpeg actúa como servidor
                     "-f", "rtsp",              
-                    "rtsp://127.0.0.1:5001/video" # NUEVO: Anclaje directo y explícito a tu máquina
+                    "rtsp://0.0.0.0:5002/video" # NUEVO: Puerto 5002 limpio y abierto a toda la red
                 ]
                 self.proceso_motor = subprocess.Popen(comando_ffmpeg)
 
