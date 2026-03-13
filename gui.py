@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import subprocess
 import sys
+import time  # NUEVO: Para la sincronía perfecta entre Chef y Mesero
 
 # Estética visual ejecutiva
 ctk.set_appearance_mode("dark")  
@@ -10,6 +11,7 @@ class RoblesStreamerApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         
+        # Arquitectura de la ventana
         self.title("Robles ScreenStreamer 🌟")
         self.geometry("450x300")
         self.resizable(False, False)
@@ -20,7 +22,6 @@ class RoblesStreamerApp(ctk.CTk):
         self.lbl_codec = ctk.CTkLabel(self, text="Selecciona el Códec de Bienestar:", font=ctk.CTkFont(size=14))
         self.lbl_codec.pack(pady=5)
         
-        # ACTUALIZACIÓN: Nuevas opciones claras para el ingeniero
         self.codec_var = ctk.StringVar(value="MJPEG (Puerto 5000)")
         self.combo_codec = ctk.CTkOptionMenu(
             self, 
@@ -39,6 +40,7 @@ class RoblesStreamerApp(ctk.CTk):
         
         self.is_streaming = False
         self.proceso_motor = None
+        self.proceso_servidor = None
         
         self.protocol("WM_DELETE_WINDOW", self.cierre_armonico)
 
@@ -51,25 +53,31 @@ class RoblesStreamerApp(ctk.CTk):
             print(f"🌟 Orquestando motor con perfil: {seleccion}")
             
             if "MJPEG" in seleccion:
+                # El camino victorioso MJPEG
                 self.proceso_motor = subprocess.Popen([sys.executable, "streamer.py"])
             
             elif "H.264" in seleccion:
-                print("🌟 Encendiendo servidor RTSP purificado (MediaMTX)...")
-                # 1. El mesero abre las puertas en el puerto universal 8554
+                print("🌟 Encendiendo servidor maestro (MediaMTX)...")
+                # 1. El mesero abre las puertas
                 self.proceso_servidor = subprocess.Popen(["mediamtx.exe"])
                 
-                print("🌟 Cocinando flujo H.264 (FFmpeg)...")
-                # 2. El chef cocina y le entrega el video directamente al mesero
+                # Sincronía: Esperamos 2 segundos para asegurar que el puerto esté listo
+                time.sleep(2)
+                
+                print("🌟 Cocinando flujo H.264 y empujando a la barra (RTSP Publish)...")
+                # 2. El chef entrega el plato directamente en la barra principal del mesero
                 comando_ffmpeg = [
                     "ffmpeg.exe",
                     "-f", "gdigrab",           
                     "-framerate", "15",        
                     "-i", "desktop",           
-                    "-c:v", "libx264",         
+                    "-c:v", "libx264",
+                    "-pix_fmt", "yuv420p",     
                     "-preset", "ultrafast",    
-                    "-tune", "zerolatency",    
-                    "-f", "rtsp",              
-                    "rtsp://localhost:8554/bienestar" # El chef entrega el plato aquí
+                    "-tune", "zerolatency", 
+                    "-rtsp_transport", "tcp",  # El chef camina con cuidado
+                    "-f", "rtsp",              # Protocolo nativo
+                    "rtsp://127.0.0.1:8554/bienestar" # Entrega directa al mesero MediaMTX
                 ]
                 self.proceso_motor = subprocess.Popen(comando_ffmpeg)
 
@@ -78,20 +86,18 @@ class RoblesStreamerApp(ctk.CTk):
             self.is_streaming = False
             print("✨ Apagando la arquitectura sintrópica...")
             
-            # Apagamos al chef
             if self.proceso_motor:
                 self.proceso_motor.terminate()
                 self.proceso_motor = None
                 
-            # Apagamos al mesero
-            if getattr(self, 'proceso_servidor', None):
+            if self.proceso_servidor:
                 self.proceso_servidor.terminate()
                 self.proceso_servidor = None
 
     def cierre_armonico(self):
         if self.proceso_motor:
             self.proceso_motor.terminate()
-        if getattr(self, 'proceso_servidor', None):
+        if self.proceso_servidor:
             self.proceso_servidor.terminate()
         self.destroy()
 
