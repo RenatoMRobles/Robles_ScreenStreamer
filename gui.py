@@ -24,7 +24,7 @@ class RoblesStreamerApp(ctk.CTk):
         self.codec_var = ctk.StringVar(value="MJPEG (Puerto 5000)")
         self.combo_codec = ctk.CTkOptionMenu(
             self, 
-            values=["MJPEG (Puerto 5000)", "H.264 (Puerto 5001)"], 
+            values=["MJPEG (Puerto 5000)", "H.264 (Puerto 8554)"], 
             variable=self.codec_var,
             width=250
         )
@@ -51,11 +51,15 @@ class RoblesStreamerApp(ctk.CTk):
             print(f"🌟 Orquestando motor con perfil: {seleccion}")
             
             if "MJPEG" in seleccion:
-                # El camino ya conocido y victorioso
                 self.proceso_motor = subprocess.Popen([sys.executable, "streamer.py"])
             
             elif "H.264" in seleccion:
-                # EL NUEVO PODER: FFmpeg liberado con extensión SDP (Eficiencia Nivel 2)
+                print("🌟 Encendiendo servidor RTSP purificado (MediaMTX)...")
+                # 1. El mesero abre las puertas en el puerto universal 8554
+                self.proceso_servidor = subprocess.Popen(["mediamtx.exe"])
+                
+                print("🌟 Cocinando flujo H.264 (FFmpeg)...")
+                # 2. El chef cocina y le entrega el video directamente al mesero
                 comando_ffmpeg = [
                     "ffmpeg.exe",
                     "-f", "gdigrab",           
@@ -64,23 +68,31 @@ class RoblesStreamerApp(ctk.CTk):
                     "-c:v", "libx264",         
                     "-preset", "ultrafast",    
                     "-tune", "zerolatency",    
-                    "-rtsp_flags", "listen",   # Servidor activado
                     "-f", "rtsp",              
-                    "rtsp://127.0.0.1:5002/live.sdp" # LA LLAVE: Agregamos .sdp para que Milestone/VLC lo reconozcan
+                    "rtsp://localhost:8554/bienestar" # El chef entrega el plato aquí
                 ]
                 self.proceso_motor = subprocess.Popen(comando_ffmpeg)
 
         else:
             self.btn_start.configure(text="▶ Iniciar Transmisión", fg_color="#28a745", hover_color="#218838")
             self.is_streaming = False
-            print("✨ Apagando el motor sintrópico...")
+            print("✨ Apagando la arquitectura sintrópica...")
+            
+            # Apagamos al chef
             if self.proceso_motor:
                 self.proceso_motor.terminate()
                 self.proceso_motor = None
+                
+            # Apagamos al mesero
+            if getattr(self, 'proceso_servidor', None):
+                self.proceso_servidor.terminate()
+                self.proceso_servidor = None
 
     def cierre_armonico(self):
         if self.proceso_motor:
             self.proceso_motor.terminate()
+        if getattr(self, 'proceso_servidor', None):
+            self.proceso_servidor.terminate()
         self.destroy()
 
 if __name__ == "__main__":
