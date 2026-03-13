@@ -55,7 +55,7 @@ class RoblesStreamerApp(ctk.CTk):
                 self.proceso_motor = subprocess.Popen([sys.executable, "streamer.py"])
             
             elif "H.264" in seleccion:
-                # EL NUEVO PODER: FFmpeg como Servidor RTSP Nativo (Puerto Purificado)
+                # EL NUEVO PODER: FFmpeg liberado con extensión SDP (Eficiencia Nivel 2)
                 comando_ffmpeg = [
                     "ffmpeg.exe",
                     "-f", "gdigrab",           
@@ -64,9 +64,9 @@ class RoblesStreamerApp(ctk.CTk):
                     "-c:v", "libx264",         
                     "-preset", "ultrafast",    
                     "-tune", "zerolatency",    
-                    "-rtsp_flags", "listen",   # FFmpeg actúa como servidor
+                    "-rtsp_flags", "listen",   # Servidor activado
                     "-f", "rtsp",              
-                    "rtsp://0.0.0.0:5002/video" # NUEVO: Puerto 5002 limpio y abierto a toda la red
+                    "rtsp://127.0.0.1:5002/live.sdp" # LA LLAVE: Agregamos .sdp para que Milestone/VLC lo reconozcan
                 ]
                 self.proceso_motor = subprocess.Popen(comando_ffmpeg)
 
